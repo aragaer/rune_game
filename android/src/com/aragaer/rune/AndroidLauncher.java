@@ -7,10 +7,11 @@ import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.aragaer.rune.RuneGame;
 
 public class AndroidLauncher extends AndroidApplication {
-	@Override
-	protected void onCreate (Bundle savedInstanceState) {
+	@Override protected void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
+		config.useAccelerometer = false;
+		config.useCompass = false;
 		initialize(new RuneGame(), config);
 	}
 }
