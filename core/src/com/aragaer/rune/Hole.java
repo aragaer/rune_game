@@ -6,10 +6,10 @@ import com.badlogic.gdx.graphics.Texture;
 
 public class Hole {
     private static Texture texture;
-    private final int x, y;
+    /* package */ final int x, y;
 
-    private final static int X_OFF = 16;
-    private final static int Y_OFF = 16;
+    private final static int X_OFF = -16;
+    private final static int Y_OFF = -16;
 
     public static void setTexture(final Texture texture) {
 	Hole.texture = texture;
@@ -21,6 +21,6 @@ public class Hole {
     }
 
     public void draw(final Batch batch) {
-	batch.draw(texture, x-X_OFF, y-Y_OFF);
+	batch.draw(texture, x+X_OFF, y+Y_OFF);
     }
 }

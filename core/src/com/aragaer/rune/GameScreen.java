@@ -13,8 +13,9 @@ public class GameScreen implements Screen {
 
     private final RuneGame game;
 
-    private Texture holeImg;
+    private Texture holeImg, shinyImg;
     private Array<Hole> holes;
+    private Array<Line> lines;
 
     private static final int LEN = 115;
     private static final int LEN2 = 100;
@@ -25,7 +26,9 @@ public class GameScreen implements Screen {
 	this.game = game;
 
 	holeImg = new Texture("hole.png");
+	shinyImg = new Texture("shiny.png");
 	Hole.setTexture(holeImg);
+	LineSegment.setTexture(shinyImg, 16);
 	holes = new Array<Hole>();
 	holes.add(new Hole(X_CENTER, Y_CENTER));
 	holes.add(new Hole(X_CENTER - LEN/2, Y_CENTER + LEN2));
@@ -46,6 +49,10 @@ public class GameScreen implements Screen {
 	holes.add(new Hole(X_CENTER - 3*LEN/2, Y_CENTER - LEN2));
 	holes.add(new Hole(X_CENTER - 2*LEN, Y_CENTER));
 	holes.add(new Hole(X_CENTER - 3*LEN/2, Y_CENTER + LEN2));
+
+	lines = new Array<Line>();
+	lines.add(new Line(holes.get(0), holes.get(1), holes.get(2), holes.get(4)));
+	lines.add(new Line(holes.get(3), holes.get(5), holes.get(8), holes.get(11)));
     }
 
     @Override public void hide() {
@@ -63,11 +70,14 @@ public class GameScreen implements Screen {
         game.batch.begin();
 	for (Hole hole : holes)
 	    hole.draw(game.batch);
+	for (Line line : lines)
+	    line.draw(game.batch);
         game.batch.end();
     }
 
     @Override public void dispose() {
 	holeImg.dispose();
+	shinyImg.dispose();
     }
 
     @Override public void pause() {
