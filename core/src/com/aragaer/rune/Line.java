@@ -1,31 +1,38 @@
 package com.aragaer.rune;
 
+import java.util.Iterator;
+
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.math.GridPoint2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 
-public class Line {
+public class Line extends Actor {
+    private final Array<LineHandle> handles;
     private final Array<LineSegment> segments;
 
     public Line(Hole... holes) {
 	segments = new Array<LineSegment>(holes.length - 1);
-	for (int i = 1; i < holes.length; i++) {
-	    LineSegment segment = new LineSegment(holes[i-1], holes[i], this, i-1);
-	    holes[i-1].segments.add(segment);
-	    holes[i].segments.add(segment);
+	handles = new Array<LineHandle>(holes.length);
+	for (Hole hole : holes) {
+	    LineHandle handle = new LineHandle(0, 0);
+	    handles.add(handle);
+	    hole.put(handle);
+	}
+
+	Iterator<LineHandle> iterator = handles.iterator();
+	LineHandle start = iterator.next();
+	while (iterator.hasNext()) {
+	    LineHandle end = iterator.next();
+	    LineSegment segment = new LineSegment(start, end);
+	    start.add(segment);
+	    end.add(segment);
 	    segments.add(segment);
+	    start = end;
 	}
     }
 
-    public void draw(final Batch batch) {
+    @Override public void draw(Batch batch, float alpha) {
 	for (LineSegment segment: segments)
-	    segment.draw(batch);
-    }
-
-    public void drag(int pointIndex, GridPoint2 point) {
-	if (pointIndex < segments.size)
-	    segments.get(pointIndex).moveStart(point);
-	if (pointIndex > 0)
-	    segments.get(pointIndex-1).moveEnd(point);
+	    segment.draw(batch, alpha);
     }
 }
