@@ -14,7 +14,7 @@ public class Line extends Group {
 	segments = new Array<LineSegment>(holes.length - 1);
 	handles = new Array<LineHandle>(holes.length);
 	for (Hole hole : holes) {
-	    LineHandle handle = new LineHandle(0, 0);
+	    LineHandle handle = new LineHandle();
 	    handles.add(handle);
 	    addActor(handle);
 	    hole.put(handle, true);

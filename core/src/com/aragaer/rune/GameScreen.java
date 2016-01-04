@@ -1,29 +1,28 @@
 package com.aragaer.rune;
 
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.math.GridPoint2;
+import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Logger;
 import com.badlogic.gdx.utils.ObjectSet;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 
 
-public class GameScreen implements Screen, InputProcessor {
+public class GameScreen implements Screen {
 
     private final Logger logger;
 
-    private Texture holeImg, shinyImg;
+    private Texture shinyImg;
     private Array<Hole> holes;
     private Array<Line> lines;
-    private OrthographicCamera camera;
     private Stage stage;
+    private AssetManager manager;
 
     private static final int LEN = 115;
     private static final int LEN2 = 100;
@@ -31,17 +30,16 @@ public class GameScreen implements Screen, InputProcessor {
     private static final int Y_CENTER = 240;
 
     public GameScreen() {
-	stage = new Stage();
+	manager = new AssetManager();
+	stage = new Stage(new FitViewport(X_CENTER*2, Y_CENTER*2));
+	stage.getRoot().addListener(new RootInputListener(stage));
 	logger = new Logger("RUNE", Logger.DEBUG);
 	logger.info("Starting");
 
-	camera = new OrthographicCamera();
-	camera.setToOrtho(false, 800, 480);
-
-	holeImg = new Texture("hole.png");
 	shinyImg = new Texture("shiny.png");
-	Hole.setTexture(holeImg);
+	Hole.setAssetManager(manager);
 	LineSegment.setTexture(shinyImg);
+	manager.finishLoading();
 	holes = new Array<Hole>();
 	holes.add(new Hole(X_CENTER, Y_CENTER));
 	holes.add(new Hole(X_CENTER - LEN/2, Y_CENTER + LEN2));
@@ -76,23 +74,22 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     @Override public void show() {
-	// Change this to stage
-	Gdx.input.setInputProcessor(this);
+	Gdx.input.setInputProcessor(stage);
     }
 
     @Override public void resize(int width, int height) {
+	stage.getViewport().update(width, height, true);
     }
 
     @Override public void render(float delta) {
         Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-	camera.update();
-	stage.act(Gdx.graphics.getDeltaTime());
+	stage.act(delta);
 	stage.draw();
     }
 
     @Override public void dispose() {
-	holeImg.dispose();
+	manager.dispose();
 	shinyImg.dispose();
 	stage.dispose();
     }
@@ -101,81 +98,5 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     @Override public void resume() {
-    }
-
-    @Override public boolean keyDown(int keycode) {
-	return false;
-    }
-
-    @Override public boolean keyUp(int keycode) {
-	return false;
-    }
-
-    @Override public boolean keyTyped(char character) {
-	return false;
-    }
-
-    private LineHandle dragged;
-    private Hole draggedFrom;
-    private Vector3 touchVector = new Vector3();
-
-    @Override public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-	if (pointer > 0
-	    || button != com.badlogic.gdx.Input.Buttons.LEFT)
-	    return false;
-	touchVector.set(screenX, screenY, 0);
-	camera.unproject(touchVector);
-	for (Hole hole: holes) {
-	    if (!hole.range.contains(touchVector.x, touchVector.y))
-		continue;
-	    if (hole.isEmpty())
-		return false;
-	    dragged = hole.pick();
-	    draggedFrom = hole;
-	    return true;
-	}
-	return false;
-    }
-
-    private void finishDragAt(Hole hole) {
-	hole.put(dragged);
-	dragged = null;
-	draggedFrom = null;
-    }
-
-    @Override public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-	if (pointer > 0
-	    || button != com.badlogic.gdx.Input.Buttons.LEFT
-	    || draggedFrom == null)
-	    return false;
-	touchVector.set(screenX, screenY, 0);
-	camera.unproject(touchVector);
-	Hole dropAt = draggedFrom;
-	for (Hole hole: holes)
-	    if (hole.range.contains(touchVector.x, touchVector.y)) {
-		if (hole.isEmpty())
-		    dropAt = hole;
-		break;
-	    }
-	finishDragAt(dropAt);
-
-	return true;
-    }
-
-    @Override public boolean touchDragged(int screenX, int screenY, int pointer) {
-	if (pointer > 0 || draggedFrom == null)
-	    return false;
-	touchVector.set(screenX, screenY, 0);
-	camera.unproject(touchVector);
-	dragged.setPosition(touchVector.x, touchVector.y);
-	return true;
-    }
-
-    @Override public boolean mouseMoved(int screenX, int screenY) {
-	return false;
-    }
-
-    @Override public boolean scrolled(int amount) {
-	return false;
     }
 }
