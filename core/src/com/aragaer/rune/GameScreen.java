@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Logger;
 import com.badlogic.gdx.utils.ObjectSet;
@@ -40,7 +41,7 @@ public class GameScreen implements Screen, InputProcessor {
 	holeImg = new Texture("hole.png");
 	shinyImg = new Texture("shiny.png");
 	Hole.setTexture(holeImg);
-	LineSegment.setTexture(shinyImg, 16);
+	LineSegment.setTexture(shinyImg);
 	holes = new Array<Hole>();
 	holes.add(new Hole(X_CENTER, Y_CENTER));
 	holes.add(new Hole(X_CENTER - LEN/2, Y_CENTER + LEN2));
@@ -86,6 +87,7 @@ public class GameScreen implements Screen, InputProcessor {
         Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 	camera.update();
+	stage.act(Gdx.graphics.getDeltaTime());
 	stage.draw();
     }
 
@@ -118,9 +120,8 @@ public class GameScreen implements Screen, InputProcessor {
     private Vector3 touchVector = new Vector3();
 
     @Override public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-	if (pointer > 0)
-	    return false;
-	if (button != com.badlogic.gdx.Input.Buttons.LEFT)
+	if (pointer > 0
+	    || button != com.badlogic.gdx.Input.Buttons.LEFT)
 	    return false;
 	touchVector.set(screenX, screenY, 0);
 	camera.unproject(touchVector);
@@ -143,37 +144,31 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     @Override public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-	if (pointer > 0)
-	    return false;
-	if (button != com.badlogic.gdx.Input.Buttons.LEFT)
-	    return false;
-	if (draggedFrom == null)
+	if (pointer > 0
+	    || button != com.badlogic.gdx.Input.Buttons.LEFT
+	    || draggedFrom == null)
 	    return false;
 	touchVector.set(screenX, screenY, 0);
 	camera.unproject(touchVector);
-	for (Hole hole: holes) {
-	    if (!hole.range.contains(touchVector.x, touchVector.y))
-		continue;
-	    if (hole.isEmpty())
-		finishDragAt(hole);
-	    else
-		finishDragAt(draggedFrom);
-	    return true;
-	}
+	Hole dropAt = draggedFrom;
+	for (Hole hole: holes)
+	    if (hole.range.contains(touchVector.x, touchVector.y)) {
+		if (hole.isEmpty())
+		    dropAt = hole;
+		break;
+	    }
+	finishDragAt(dropAt);
 
-	return false;
+	return true;
     }
 
     @Override public boolean touchDragged(int screenX, int screenY, int pointer) {
-	if (pointer > 0)
+	if (pointer > 0 || draggedFrom == null)
 	    return false;
-	if (draggedFrom != null) {
-	    touchVector.set(screenX, screenY, 0);
-	    camera.unproject(touchVector);
-	    dragged.move(touchVector.x, touchVector.y);
-	    return true;
-	}
-	return false;
+	touchVector.set(screenX, screenY, 0);
+	camera.unproject(touchVector);
+	dragged.setPosition(touchVector.x, touchVector.y);
+	return true;
     }
 
     @Override public boolean mouseMoved(int screenX, int screenY) {

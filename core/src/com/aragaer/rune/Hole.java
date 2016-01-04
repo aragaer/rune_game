@@ -5,10 +5,10 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
 
 public class Hole extends Actor {
     private static Texture texture;
-    private final int x, y;
     /* package */ final Circle range;
     private LineHandle segments;
 
@@ -20,9 +20,8 @@ public class Hole extends Actor {
 	Hole.texture = texture;
     }
 
-    public Hole(int x, int y) {
-	this.x = x;
-	this.y = y;
+    public Hole(float x, float y) {
+	setPosition(x, y);
 	range = new Circle(x, y, RANGE);
     }
 
@@ -37,11 +36,22 @@ public class Hole extends Actor {
     }
 
     public void put(LineHandle handle) {
+	put(handle, false);
+    }
+
+    public void put(LineHandle handle, boolean immediately) {
 	segments = handle;
-	handle.move(x, y);
+	if (immediately)
+	    handle.setPosition(getX(), getY());
+	else {
+	    MoveToAction action = new MoveToAction();
+	    action.setPosition(getX(), getY());
+	    action.setDuration(.2f);
+	    handle.addAction(action);
+	}
     }
 
     @Override public void draw(Batch batch, float alpha) {
-	batch.draw(texture, x+X_OFF, y+Y_OFF);
+	batch.draw(texture, getX()+X_OFF, getY()+Y_OFF);
     }
 }

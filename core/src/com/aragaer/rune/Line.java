@@ -3,10 +3,10 @@ package com.aragaer.rune;
 import java.util.Iterator;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.utils.Array;
 
-public class Line extends Actor {
+public class Line extends Group {
     private final Array<LineHandle> handles;
     private final Array<LineSegment> segments;
 
@@ -16,7 +16,8 @@ public class Line extends Actor {
 	for (Hole hole : holes) {
 	    LineHandle handle = new LineHandle(0, 0);
 	    handles.add(handle);
-	    hole.put(handle);
+	    addActor(handle);
+	    hole.put(handle, true);
 	}
 
 	Iterator<LineHandle> iterator = handles.iterator();
@@ -24,8 +25,6 @@ public class Line extends Actor {
 	while (iterator.hasNext()) {
 	    LineHandle end = iterator.next();
 	    LineSegment segment = new LineSegment(start, end);
-	    start.add(segment);
-	    end.add(segment);
 	    segments.add(segment);
 	    start = end;
 	}
