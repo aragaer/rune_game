@@ -1,26 +1,31 @@
 package com.aragaer.rune;
 
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 
 import static com.badlogic.gdx.math.Vector2.len;
 
 public class LineSegment extends Actor {
-    private static Texture texture;
+    private static AssetManager manager;
+    private Texture texture;
 
     private static final int X_OFF = -8;
     private static final int Y_OFF = -8;
 
     private LineHandle start, end;
 
-    public static void setTexture(Texture texture) {
-	LineSegment.texture = texture;
+    public static void setAssetManager(AssetManager manager) {
+	LineSegment.manager = manager;
+	manager.load("shiny.png", Texture.class);
     }
 
     public LineSegment(LineHandle from, LineHandle to) {
 	start = from;
 	end = to;
+	texture = manager.get("shiny.png");
     }
 
     @Override public void draw(Batch batch, float alpha) {

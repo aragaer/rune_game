@@ -18,7 +18,6 @@ public class GameScreen implements Screen {
 
     private final Logger logger;
 
-    private Texture shinyImg;
     private Array<Hole> holes;
     private Array<Line> lines;
     private Stage stage;
@@ -36,9 +35,8 @@ public class GameScreen implements Screen {
 	logger = new Logger("RUNE", Logger.DEBUG);
 	logger.info("Starting");
 
-	shinyImg = new Texture("shiny.png");
 	Hole.setAssetManager(manager);
-	LineSegment.setTexture(shinyImg);
+	LineSegment.setAssetManager(manager);
 	manager.finishLoading();
 	holes = new Array<Hole>();
 	holes.add(new Hole(X_CENTER, Y_CENTER));
@@ -90,7 +88,6 @@ public class GameScreen implements Screen {
 
     @Override public void dispose() {
 	manager.dispose();
-	shinyImg.dispose();
 	stage.dispose();
     }
 
