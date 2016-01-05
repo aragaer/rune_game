@@ -1,8 +1,8 @@
 package com.aragaer.rune;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.ParticleEffect;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 
@@ -10,34 +10,47 @@ import static com.badlogic.gdx.math.Vector2.len;
 
 public class LineSegment extends Actor {
     private static AssetManager manager;
-    private Texture texture;
-
-    private static final int X_OFF = -8;
-    private static final int Y_OFF = -8;
+    private static ParticleEffectPool effects;
+    private ParticleEffect effect;
 
     private LineHandle start, end;
 
     public static void setAssetManager(AssetManager manager) {
 	LineSegment.manager = manager;
-	manager.load("shiny.png", Texture.class);
+	manager.load("enchant.party", ParticleEffect.class);
     }
 
     public LineSegment(LineHandle from, LineHandle to) {
 	start = from;
 	end = to;
-	texture = manager.get("shiny.png");
+	synchronized (LineSegment.class) {
+	    if (effects == null)
+		effects = new ParticleEffectPool(manager.get("enchant.party",
+							     ParticleEffect.class), 1, 10);
+	}
+	effect = effects.obtain();
+	updatePosition();
+	effect.start();
     }
 
-    @Override public void draw(Batch batch, float alpha) {
+    @Override public void draw(Batch batch, float delta) {
+	updatePosition();
+	effect.update(Gdx.graphics.getDeltaTime());
+	effect.draw(batch);
+    }
+
+    private void updatePosition() {
 	float startx = start.getX();
 	float starty = start.getY();
 	float diffx = end.getX() - startx;
 	float diffy = end.getY() - starty;
-	int shinyCount = Math.round(len(diffx, diffy)/10);
-	for (int i = 1; i <= shinyCount; i++) {
-	    int x = Math.round(startx + diffx*i/(shinyCount + 1));
-	    int y = Math.round(starty + diffy*i/(shinyCount + 1));
-	    batch.draw(texture, x+X_OFF, y+Y_OFF);
+	int emission = Math.round(len(diffx, diffy)/2);
+	for (ParticleEmitter emitter : effect.getEmitters()) {
+	    emitter.getEmission().setLow(emission/2);
+	    emitter.getEmission().setHigh(emission);
+	    emitter.setPosition(startx, starty);
+	    emitter.getSpawnWidth().setHigh(diffx);
+	    emitter.getSpawnHeight().setHigh(diffy);
 	}
     }
 }

@@ -30,8 +30,8 @@ public class Line extends Group {
 	}
     }
 
-    @Override public void draw(Batch batch, float alpha) {
+    @Override public void draw(Batch batch, float delta) {
 	for (LineSegment segment: segments)
-	    segment.draw(batch, alpha);
+	    segment.draw(batch, delta);
     }
 }
