@@ -3,12 +3,12 @@ package com.aragaer.rune;
 import com.badlogic.gdx.scenes.scene2d.*;
 
 
-class RootInputListener extends InputListener {
+class FieldInputListener extends InputListener {
     private LineHandle dragged;
     private Hole draggedFrom, hovering;
     private final Stage stage;
 
-    public RootInputListener(Stage stage) {
+    public FieldInputListener(Stage stage) {
 	this.stage = stage;
     }
 

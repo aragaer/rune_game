@@ -11,23 +11,25 @@ public class Line extends Group {
     private final Array<LineSegment> segments;
 
     public Line(Hole... holes) {
-	segments = new Array<LineSegment>(holes.length - 1);
-	handles = new Array<LineHandle>(holes.length);
-	for (Hole hole : holes) {
-	    LineHandle handle = new LineHandle();
-	    handles.add(handle);
-	    addActor(handle);
-	    hole.put(handle, true);
-	}
+	segments = new Array<LineSegment>();
+	handles = new Array<LineHandle>();
+	LineHandle handle = new LineHandle(0);
+	handles.add(handle);
+	holes[0].put(handle, true);
+	addActor(handle);
 
-	Iterator<LineHandle> iterator = handles.iterator();
-	LineHandle start = iterator.next();
-	while (iterator.hasNext()) {
-	    LineHandle end = iterator.next();
-	    LineSegment segment = new LineSegment(start, end);
-	    segments.add(segment);
-	    start = end;
-	}
+	for (int i = 1; i < holes.length; i++)
+	    addSegment(holes[i]);
+    }
+
+    public void addSegment(Hole hole) {
+	LineHandle handle = new LineHandle(handles.size);
+	hole.put(handle, true);
+	LineSegment segment = new LineSegment(handles.peek(), handle);
+	handles.add(handle);
+	segments.add(segment);
+	addActor(segment);
+	addActor(handle);
     }
 
     @Override public void draw(Batch batch, float delta) {
